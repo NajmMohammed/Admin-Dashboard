@@ -1,4 +1,5 @@
-﻿using AdminDashboard.Api.Models;
+﻿using AdminDashboard.Api.Data;
+using AdminDashboard.Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,17 +9,18 @@ namespace AdminDashboard.Api.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private readonly AppDbContext _dbContext;
 
+        public UsersController( AppDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
         [HttpGet]
         public IActionResult GetUsers()
         {
-            var users = new List<User>
-            {
-                new User { Id = 1 , Email = "Admin@test.com" , Role = Role.admin },
-                new User { Id = 2 , Email = "user@test.com" , Role = Role.user }
-            };
+            var users = _dbContext.Users.ToList();
             return Ok(users);
-
         }
+
     }
 }
