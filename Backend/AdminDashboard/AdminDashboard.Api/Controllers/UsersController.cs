@@ -1,4 +1,5 @@
 ﻿using AdminDashboard.Api.Data;
+using AdminDashboard.Api.DTOS;
 using AdminDashboard.Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace AdminDashboard.Api.Controllers
     {
         private readonly AppDbContext _dbContext;
 
-        public UsersController( AppDbContext dbContext)
+        public UsersController(AppDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -21,6 +22,33 @@ namespace AdminDashboard.Api.Controllers
             var users = _dbContext.Users.ToList();
             return Ok(users);
         }
+        [HttpGet("{id}")]
+        public IActionResult GetUserById(int id)
+        {
+            var user = _dbContext.Users.Find(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(UserDTO userDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var user = new User
+            {
+                Username = userDto.Name,
+                Email = userDto.Email
+            };
+            _dbContext.Users.Add(user);
+           await _dbContext.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
+
+        }
     }
 }
