@@ -48,5 +48,28 @@ namespace AdminDashboard.Api.Controllers
             await _dbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProduct(int id, ProductDTO Dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var product = _dbContext.Products.Find(id);
+            if (product == null)
+                return NotFound();
+            product.Name = Dto.Name;
+            product.Price = Dto.Price;
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var product = await _dbContext.Products.FindAsync(id);
+            if (product == null)
+                return NotFound();
+            _dbContext.Products.Remove(product);
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }

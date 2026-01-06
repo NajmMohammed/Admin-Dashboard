@@ -3,6 +3,7 @@ using AdminDashboard.Api.DTOS;
 using AdminDashboard.Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AdminDashboard.Api.Controllers
 {
@@ -42,13 +43,42 @@ namespace AdminDashboard.Api.Controllers
             }
             var user = new User
             {
-                Username = userDto.Name,
+                Name = userDto.Name,
                 Email = userDto.Email
             };
             _dbContext.Users.Add(user);
            await _dbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
 
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user == null)
+                return NotFound();
+
+            user.Name = dto.Name;
+            user.Email = dto.Email;
+
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            _dbContext.Users.Remove(user);
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
         }
     }
 }
