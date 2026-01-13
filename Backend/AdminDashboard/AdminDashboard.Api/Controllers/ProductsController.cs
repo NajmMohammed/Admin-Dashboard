@@ -17,10 +17,37 @@ namespace AdminDashboard.Api.Controllers
             _dbContext = dbContext;
         }
         [HttpGet]
-        public IActionResult GetProducts()
+        public IActionResult GetProducts(int page = 1,
+    int pageSize = 5,
+    string? search = null,
+    decimal? minPrice = null,
+    decimal? maxPrice = null)
         {
-            var products = _dbContext.Products.ToList();
-            return Ok(products);
+            var query = _dbContext.Products.AsQueryable();
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p => p.Name.Contains(search));
+            }
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+            var totalItems = query.Count();
+            var products = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+            return Ok(new
+            {
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize,
+                Items = products
+            });
         }
         [HttpGet("{id}")]
         public IActionResult GetProductById(int id)
