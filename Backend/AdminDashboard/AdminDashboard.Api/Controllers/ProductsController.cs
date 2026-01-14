@@ -69,7 +69,10 @@ namespace AdminDashboard.Api.Controllers
             var product = new Product
             {
                 Name = productDto.Name,
-                Price = productDto.Price
+                Price = productDto.Price,
+                Description = productDto.Description,
+                Stock = productDto.Stock
+
             };
             _dbContext.Products.Add(product);
             await _dbContext.SaveChangesAsync();

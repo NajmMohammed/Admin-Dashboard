@@ -10,5 +10,11 @@ namespace AdminDashboard.Api.DTOS
         [Required]
         public decimal Price { get; set; }
 
+        [Required]
+        public int Stock { get; set; }
+        [Required]
+        public string Description { get; set; } = string.Empty;
+
+
     }
 }
