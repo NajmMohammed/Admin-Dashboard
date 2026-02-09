@@ -1,5 +1,6 @@
 using AdminDashboard.Api.Data;
 using AdminDashboard.Api.Helpers;
+using AdminDashboard.Api.MiddleWares;
 using AdminDashboard.Api.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +103,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
