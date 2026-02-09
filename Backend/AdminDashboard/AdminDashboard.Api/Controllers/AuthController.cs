@@ -13,14 +13,14 @@ namespace AdminDashboard.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController: ControllerBase
+    public class AuthController : ControllerBase
 
     {
         private readonly AppDbContext _context;
         private readonly TokenService _tokenService;
         private readonly PasswordHasher<User> _passwordHasher;
 
-        public AuthController(AppDbContext context , TokenService tokenService)
+        public AuthController(AppDbContext context, TokenService tokenService)
         {
             _context = context;
             _tokenService = tokenService;
@@ -38,7 +38,8 @@ namespace AdminDashboard.Api.Controllers
             var user = new User
             {
                 Name = dto.Name,
-                Email = dto.Email
+                Email = dto.Email,
+                Role = "User"
             };
 
             user.Password = _passwordHasher.HashPassword(user, dto.Password);
@@ -74,13 +75,52 @@ namespace AdminDashboard.Api.Controllers
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
             await _context.SaveChangesAsync();
-            return Ok(new {
-            
+            return Ok(new
+            {
+
                 accessToken,
                 refreshToken
             });
         }
 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenDTO dto)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken &&
+                u.RefreshTokenExpiryTime > DateTime.UtcNow
+                );
+            if (user == null)
+                return Unauthorized("Invalid refresh token");
 
+            var newAccessToken = _tokenService.CreateAccessToken(user);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+            return Ok(new
+            {
+                accessToken = newAccessToken,
+                refreshToken = newRefreshToken
+            });
+
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(RefreshTokenDTO dto)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken);
+
+            if (user == null)
+                return NoContent();
+
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

@@ -1,11 +1,12 @@
 ﻿using AdminDashboard.Api.Data;
 using AdminDashboard.Api.DTOS;
 using AdminDashboard.Api.Models;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdminDashboard.Api.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
@@ -59,6 +60,7 @@ namespace AdminDashboard.Api.Controllers
             }
             return Ok(product);
         }
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> CreateProduct(ProductDTO productDto)
         {
@@ -78,6 +80,7 @@ namespace AdminDashboard.Api.Controllers
             await _dbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
         }
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, ProductDTO Dto)
         {
@@ -91,6 +94,7 @@ namespace AdminDashboard.Api.Controllers
             await _dbContext.SaveChangesAsync();
             return NoContent();
         }
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
